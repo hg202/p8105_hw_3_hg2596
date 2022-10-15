@@ -79,3 +79,163 @@ ggplot(accel_2, aes(x = mins, y = count, color = day)) +
 Describe any patterns or conclusions 
 - Most stay under 2500, two big peaks toward the beginning of the day and end. 
 - Which one is better representative, the line or the point? 
+
+
+# Problem 3
+
+```{r}
+data("ny_noaa")
+```
+
+```{r}
+names(ny_noaa)
+head(ny_noaa)
+
+```
+
+```{r}
+noaa_2 = ny_noaa %>% 
+  janitor::clean_names() %>%
+  separate(date,c("A", "B", "C")) %>%
+  select("B","C","A", everything()) %>%
+  rename(month = "B", day = "C", year = "A") %>%
+  mutate(month = month.abb[as.numeric(month)]) %>%
+  mutate(tmax = as.integer(tmax)) %>%
+  mutate(tmin = as.integer(tmin)) %>%
+  select(id, everything()) 
+
+head(noaa_2)
+
+```
+
+```{r}
+noaa_3= 
+  noaa_2 %>% 
+  mutate(tmax_new = tmax/10) %>%
+  mutate(tmin_new = tmin/10) %>%
+  mutate(prcp_1 = prcp/10) %>% 
+  mutate(prcp_new = prcp_1/1000) %>% 
+  mutate(snow_new = snow/1000) %>%
+  mutate(snwd_new = snwd/1000) %>% 
+  mutate_if(is.double,as.integer)
+```
+
+
+tmax: Maximum temperature (tenths of degrees C) -> C
+tmin: Minimum temperature (tenths of degrees C) -> C
+
+prcp: Precipitation (tenths of mm) -> m 
+snow: Snowfall (mm) -> m 
+snwd: Snow depth (mm) -> m 
+
+
+```{r}
+noaa_3 %>% 
+  count(snow_new, name = "n_obs", sort = TRUE)
+```
+
+
+** Question 3; 
+
+The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and indicating the extent to which missing data is an issue. Then, do or answer the following (commenting on the results of each):
+
+After cleaning,  **ID**, **date** (month,day,year), **prcp**, **snow**, **snwd**, **tmax** and **tmin**. 
+
+**missing** alot...?
+
+For snowfall, what are the most commonly observed values? Why?
+
+Most common is no snow days, "0". The reason behind that can be because location, not too many snow days. 
+
+
+```{r}
+noaa_3 %>%
+  mutate(tmax_new = as.numeric(tmax_new)) %>%
+  group_by(id, month) %>%
+  filter(month == "Jan"| month == "Jul") %>%
+  summarize(avg_tmax = mean(tmax_new)) %>%
+  ggplot(aes(x = id, y = avg_tmax)) + geom_point(alpha = .8) + facet_grid(. ~ month)
+
+```
+
+Is there any observational, interpretable structure. Any outliers? 
+try box plot? 
+
+```{r}
+
+skimr::skim(noaa_3)
+  
+```
+
+```{r}
+graph = 
+  noaa_3 %>% 
+  mutate(year = as.factor(year)) %>%
+  ggplot(aes(x = tmax_new, y = tmin_new)) + 
+  geom_hex()
+```
+
+
+```{r}
+scatter = 
+  noaa_3 %>%
+  filter(snow_new > 0) %>%
+  filter(snow_new < 100) %>%
+  ggplot(aes(x = snow_new , y = year)) + geom_line()
+```
+
+
+no question asked. 
+
+helpful with axis: 
+
+```{r}
+#theme(axis.text.x = element_blank(), legend.position = "none")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+scatter_snow = 
+noaa_3 %>% 
+  mutate(year = as.factor(year)) %>%
+  filter(snow_new > 0) %>%
+  filter(snow_new <100) %>%
+ggplot(aes(x = snow_new, y = year)) + 
+  geom_line() +
+  theme(legend.position = "none")
+
+(hex_temp/scatter_snow)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
