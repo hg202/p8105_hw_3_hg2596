@@ -1,0 +1,81 @@
+---
+title: "p8105_hw_3_hg2596"
+output: github_document
+name: Hilina Giday
+date: "2022-10-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(p8105.datasets)
+```
+
+# Problem 2 
+
+```{r}
+accel_1 = read_csv("./data/accel_data.csv")%>%
+  janitor::clean_names() 
+  
+```
+
+```{r}
+
+accel_2 =  pivot_longer(
+    accel_1, 
+    activity_1:activity_1440,
+    names_to = "mins",  
+    names_prefix = "activity_",
+    values_to = "count"
+    ) %>%
+  mutate(Week_identify = ifelse(day%in%c("Saturday", "Sunday"), 2, 1)) %>%
+  mutate(day = fct_relevel(day,"Monday","Tuesday","Wednesday", "Thursday", "Friday","Saturday", "Sunday"))
+```
+
+Originally had over 1440 columns, the following variables were: **week** (1-5),**day_ID** (just a count), **day** (Mon-Sun), **activity_1**, **activity_2**...activity count following the patient 24 hours. 
+
+Now, after pivoting longer, we are able to put the counts is **counts** making it one variable,and made a new variable **mins** to kep track which count came from which minute of the week.  
+
+There are now `r nrow(accel_2)` observations and `r ncol(accel_2) `  wows
+
+
+```{r}
+accel_3 = 
+accel_2 %>%
+  mutate(day = as.factor(day))%>%
+  group_by(week,day) %>%
+  summarize(total_activity = sum(count))
+```
+
+maybe ad false = true so the high can come to the beginning 
+```{r}
+accel_4 = accel_3 %>%
+  pivot_wider(
+  names_from = "day", 
+  values_from = "total_activity")
+```
+
+**Question 1; Part 2**
+Any trends apparent? 
+
+A big drop on the weekends.
+
+
+```{r}
+ggplot(accel_2, aes(x = mins, y = count, color = day)) + 
+  geom_point()
+```
+
+```{r}
+ggplot(accel_2, aes(x = mins, y = count, color = day)) + 
+  geom_line()
+```
+
+**Question 1; Part 3**
+
+Describe any patterns or conclusions 
+- Most stay under 2500, two big peaks toward the beginning of the day and end. 
+- Which one is better representative, the line or the point? 
