@@ -3,15 +3,23 @@ title: "p8105_hw_3_hg2596"
 output: github_document
 name: Hilina Giday
 date: "2022-10-15"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning = FALSE, 
+                      fig.width = 8,
+                      fig.height = 6, 
+                      out.width = "90%")
 ```
 
 ```{r}
 library(tidyverse)
 library(p8105.datasets)
+library(patchwork)
+library(ggridges)
 ```
 
 # Problem 2 
@@ -56,6 +64,8 @@ accel_4 = accel_3 %>%
   pivot_wider(
   names_from = "day", 
   values_from = "total_activity")
+
+accel_4 
 ```
 
 **Question 1; Part 2**
@@ -63,11 +73,7 @@ Any trends apparent?
 
 A big drop on the weekends.
 
-
-```{r}
-ggplot(accel_2, aes(x = mins, y = count, color = day)) + 
-  geom_point()
-```
+Just eyeballing the table, it looks like the for week 4 and week 5 there is a **big drop** in counts on Saturday. On average, Mondays on average higher counts. Overall, though its difficult to see very apparent trends just based on the table. 
 
 ```{r}
 ggplot(accel_2, aes(x = mins, y = count, color = day)) + 
@@ -77,8 +83,8 @@ ggplot(accel_2, aes(x = mins, y = count, color = day)) +
 **Question 1; Part 3**
 
 Describe any patterns or conclusions 
-- Most stay under 2500, two big peaks toward the beginning of the day and end. 
-- Which one is better representative, the line or the point? 
+
+There is a lot of data, so it is very difficult to distinguish patterns.However, some of the trends is that that count on **average is below 2500**. Another trend is there seems to be peak minutes when the count goes above the average count, its difficult to know exactly what exact minutes but it seems their are **two high peaks** during the morning and later on toward the latter portion of the 24 hour period. 
 
 
 # Problem 3
@@ -113,21 +119,14 @@ noaa_3=
   noaa_2 %>% 
   mutate(tmax_new = tmax/10) %>%
   mutate(tmin_new = tmin/10) %>%
-  mutate(prcp_1 = prcp/10) %>% 
-  mutate(prcp_new = prcp_1/1000) %>% 
-  mutate(snow_new = snow/1000) %>%
-  mutate(snwd_new = snwd/1000) %>% 
+  mutate(prcp_new = prcp/10) %>% 
   mutate_if(is.double,as.integer)
 ```
 
 
 tmax: Maximum temperature (tenths of degrees C) -> C
 tmin: Minimum temperature (tenths of degrees C) -> C
-
 prcp: Precipitation (tenths of mm) -> m 
-snow: Snowfall (mm) -> m 
-snwd: Snow depth (mm) -> m 
-
 
 ```{r}
 noaa_3 %>% 
@@ -146,6 +145,8 @@ After cleaning,  **ID**, **date** (month,day,year), **prcp**, **snow**, **snwd**
 For snowfall, what are the most commonly observed values? Why?
 
 Most common is no snow days, "0". The reason behind that can be because location, not too many snow days. 
+
+*Is missing data an issue??????????
 
 
 ```{r}
@@ -177,24 +178,21 @@ graph =
 
 
 ```{r}
-scatter = 
-  noaa_3 %>%
-  filter(snow_new > 0) %>%
-  filter(snow_new < 100) %>%
-  ggplot(aes(x = snow_new , y = year)) + geom_line()
+
+scatter_2 = 
+  noaa_2 %>%
+  mutate(year = as.factor(year)) %>%
+  filter(snow < 100) %>%
+  filter(snow >= 0) %>%
+  ggplot(aes(x = snow , y = year)) + geom_density_ridges(alpha = 0.5)
+
 ```
-
-
-no question asked. 
-
-helpful with axis: 
 
 ```{r}
-#theme(axis.text.x = element_blank(), legend.position = "none")
+(graph/scatter_2)
 ```
 
-
-
+ADD titles??
 
 
 
